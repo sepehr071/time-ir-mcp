@@ -1,0 +1,94 @@
+{
+ "status_code": 200,
+ "object_type": "list",
+ "time_taken": 37,
+ "creation_date": "2026-11-01T00:34:17.2561814+03:30",
+ "url": "/v1/sitemember/fa/cities",
+ "message": "فهرست شهرها با موفقیت برگردانده شد.",
+ "error": null,
+ "data": [
+  {
+   "id": 204,
+   "title": "شیراز",
+   "priority": 0,
+   "status": 1,
+   "status_title": "فعال",
+   "province_id": 15,
+   "latitude": 29.61,
+   "longitude": 52.5425,
+   "calling_code": "071",
+   "code": 1364432238,
+   "density": 280.5,
+   "population": 1460665,
+   "population_proper": 1460665,
+   "ranking": 1,
+   "description": "",
+   "object_name": "city"
+  },
+  {
+   "id": 5538,
+   "title": "علامرودشت",
+   "priority": 0,
+   "status": 1,
+   "status_title": "فعال",
+   "province_id": 15,
+   "latitude": 27.6261,
+   "longitude": 53,
+   "calling_code": "",
+   "code": 1364715455,
+   "density": 22.5,
+   "population": 0,
+   "population_proper": 0,
+   "ranking": 2,
+   "description": "",
+   "object_name": "city"
+  },
+  {
+   "id": 280,
+   "title": "مرودشت",
+   "priority": 0,
+   "status": 1,
+   "status_title": "فعال",
+   "province_id": 15,
+   "latitude": 29.8742,
+   "longitude": 52.8025,
+   "calling_code": "071",
+   "code": 1364881808,
+   "density": 87.5,
+   "population": 148858,
+   "population_proper": 148858,
+   "ranking": 2,
+   "description": "",
+   "object_name": "city"
+  }
+ ],
+ "paging": {
+  "offset": 0,
+  "limit": 200,
+  "total": 120,
+  "returned": 120,
+  "has_more": false
+ },
+ "sorting": [
+  {
+   "expression": "title",
+   "ascending": true
+  }
+ ],
+ "meta": {
+  "title": "",
+  "description": "API description",
+  "term_of_use": "To use this JSON API, you must accept the Radcom APIs Terms of Service (\"API ToS\") at https://www.radcom.co/fa/terms",
+  "copyright": "Copyright 2026 radcom.co",
+  "version": "1.0",
+  "contact": {
+   "name": "radcom",
+   "url": "https://www.radcom.co/",
+   "email": "info@radcom.co"
+  },
+  "license": {
+   "name": "Mana Phoenix License",
+   "url": "https://www.radcom.co/fa/manaphoenix"
+  }
+ }
+}

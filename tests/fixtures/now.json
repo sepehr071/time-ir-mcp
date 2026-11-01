@@ -1,0 +1,66 @@
+{
+ "status_code": 200,
+ "object_type": "object",
+ "time_taken": 0,
+ "creation_date": "2026-11-01T00:34:59.8753294+03:30",
+ "url": "https://api.time.ir/v1/time/fa/time/now",
+ "message": "تاریخ و زمان امروز با موفقیت برگردانده شد.",
+ "error": null,
+ "data": {
+  "astrological_sign": "عقرب",
+  "gregorian": {
+   "year": 2026,
+   "month": 11,
+   "day": 1,
+   "day_title": "Sunday",
+   "day_title_small": "Sun",
+   "month_title": "November",
+   "month_title_small": "Nov",
+   "object_name": "date"
+  },
+  "jalali": {
+   "year": 1405,
+   "month": 8,
+   "day": 10,
+   "day_title": "یکشنبه",
+   "day_title_small": "ی",
+   "month_title": "آبان",
+   "month_title_small": null,
+   "object_name": "date"
+  },
+  "hijri": {
+   "year": 1448,
+   "month": 5,
+   "day": 21,
+   "day_title": "الأحد‬",
+   "day_title_small": "ا",
+   "month_title": "جمادی الاول",
+   "month_title_small": null,
+   "object_name": "date"
+  },
+  "time": {
+   "hour": 0,
+   "minute": 34,
+   "second": 59,
+   "milli_second": 875,
+   "object_name": "time"
+  },
+  "object_name": "now"
+ },
+ "meta": {
+  "title": "تاریخ و ساعت محلی ایران",
+  "description": "این API تاریخ و زمان محلی ایران را برمی گرداند.",
+  "term_of_use": "To use this JSON API, you must accept the Radcom APIs Terms of Service (\"API ToS\") at https://www.radcom.co/fa/terms",
+  "copyright": "Copyright 2026 radcom.co",
+  "version": "1.0",
+  "contact": {
+   "name": "radcom",
+   "url": "https://www.radcom.co/",
+   "email": "info@radcom.co"
+  },
+  "license": {
+   "name": "Mana Phoenix License",
+   "url": "https://www.radcom.co/fa/manaphoenix"
+  }
+ }
+}

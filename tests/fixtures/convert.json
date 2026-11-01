@@ -1,0 +1,79 @@
+{
+ "ok": true,
+ "response": {
+  "status_code": 200,
+  "object_type": "object",
+  "time_taken": 0,
+  "creation_date": "2026-11-01T00:35:03.8770764+03:30",
+  "url": "https://api.time.ir/v1/time/fa/time/convertdate",
+  "message": "تبدیل تاریخ با موفقیت انجام شد.",
+  "error": null,
+  "data": {
+   "current_base": 0,
+   "year": 1405,
+   "month": 9,
+   "day": 4,
+   "date_list": [
+    {
+     "year": 1405,
+     "month": 9,
+     "day": 4,
+     "day_title": "چهارشنبه",
+     "is_leap_year": false,
+     "astrological_sign": "قوس",
+     "intervals": "  24 روز آینده ",
+     "date_type": "jalali",
+     "month_title": "آذر",
+     "year_utf8": "۱۴۰۵",
+     "month_utf8": "۰۹",
+     "day_utf8": "۰۴"
+    },
+    {
+     "year": 2026,
+     "month": 11,
+     "day": 25,
+     "day_title": "Wednesday",
+     "is_leap_year": false,
+     "astrological_sign": "",
+     "intervals": "  24 روز آینده ",
+     "date_type": "gregorian",
+     "month_title": "November",
+     "year_utf8": "۲۰۲۶",
+     "month_utf8": "۱۱",
+     "day_utf8": "۲۵"
+    },
+    {
+     "year": 1448,
+     "month": 6,
+     "day": 15,
+     "day_title": "الأربعاء‬",
+     "is_leap_year": false,
+     "astrological_sign": "",
+     "intervals": "&nbsp;",
+     "date_type": "hijri",
+     "month_title": "جمادی الثانیه",
+     "year_utf8": "۱۴۴۸",
+     "month_utf8": "۰۶",
+     "day_utf8": "۱۵"
+    }
+   ],
+   "object_name": "dateTime"
+  },
+  "meta": {
+   "title": "",
+   "description": "API description",
+   "term_of_use": "To use this JSON API, you must accept the Radcom APIs Terms of Service (\"API ToS\") at https://www.radcom.co/fa/terms",
+   "copyright": "Copyright 2026 radcom.co",
+   "version": "1.0",
+   "contact": {
+    "name": "radcom",
+    "url": "https://www.radcom.co/",
+    "email": "info@radcom.co"
+   },
+   "license": {
+    "name": "Mana Phoenix License",
+    "url": "https://www.radcom.co/fa/manaphoenix"
+   }
+  }
+ }
+}

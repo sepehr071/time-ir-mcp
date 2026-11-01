@@ -1,0 +1,41 @@
+{
+ "status_code": 200,
+ "object_type": "object",
+ "time_taken": 8,
+ "creation_date": "2026-11-01T00:35:11.8474999+03:30",
+ "url": "https://api.time.ir/v1/ephemeris/fa/ephemerises/bycity?cityid=204&time_base=0&current_year=1405&current_month=9&current_day=4",
+ "message": "اوقات شرعی با موفقیت برگردانده شد.",
+ "error": null,
+ "data": {
+  "city_id": 204,
+  "city_title": "شیراز",
+  "year": 1405,
+  "month": 8,
+  "day": 10,
+  "event_base": 0,
+  "azan_morning": "04:52",
+  "sunrise": "06:13",
+  "azan_noon": "11:43",
+  "sunset": "17:14",
+  "azan_night": "17:30",
+  "mid_night": "23:03",
+  "province_id": 15,
+  "day_title": "یکشنبه"
+ },
+ "meta": {
+  "title": "",
+  "description": "API description",
+  "term_of_use": "To use this JSON API, you must accept the Radcom APIs Terms of Service (\"API ToS\") at https://www.radcom.co/fa/terms",
+  "copyright": "Copyright 2026 radcom.co",
+  "version": "1.0",
+  "contact": {
+   "name": "radcom",
+   "url": "https://www.radcom.co/",
+   "email": "info@radcom.co"
+  },
+  "license": {
+   "name": "Mana Phoenix License",
+   "url": "https://www.radcom.co/fa/manaphoenix"
+  }
+ }
+}
