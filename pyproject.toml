@@ -1,6 +1,6 @@
 [project]
 name = "time-ir-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Unofficial read-only MCP server for Time.ir, the Iranian calendar: Jalali, Gregorian and Hijri dates, holidays, events, prayer times."
 readme = "README.md"
 license = "MIT"
