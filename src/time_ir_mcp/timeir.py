@@ -20,11 +20,9 @@ WEEKDAYS = ["شنبه", "یکشنبه", "دوشنبه", "سه\u200cشنبه", "�
 IRAN_COUNTRY_ID = 78
 DATE = Annotated[
     str | None,
-    Field(description="Date as YYYY-MM-DD in the chosen calendar (for example 1405-08-10). Omit for today."),
+    Field(description="YYYY-MM-DD in `calendar`, e.g. 1405-08-10. Omit for today."),
 ]
-CAL = Annotated[
-    Calendar, Field(description="Calendar of `date`: jalali (Solar Hijri, default), gregorian or hijri (lunar).")
-]
+CAL = Annotated[Calendar, Field(description="Calendar of the date(s).")]
 
 
 def _txt(s: str | None, limit: int | None = None) -> str:
@@ -86,8 +84,8 @@ def _jalali(c: dict) -> tuple[int, int, int]:
     return _parse_date(c["jalali"])
 
 
-def _event(e: dict, with_text: bool = False) -> dict:
-    """An event row, trimmed. `calendar` says which calendar the occasion belongs to."""
+def _event(e: dict, with_text: bool = False, dates: bool = True) -> dict:
+    """An event row, trimmed. `calendar` says which calendar the occasion belongs to; `dates` False drops the day's dates."""
     out = {
         "jalali": _ymd(e["jalali_year"], e["jalali_month"], e["jalali_day"]),
         "gregorian": _ymd(e["gregorian_year"], e["gregorian_month"], e["gregorian_day"]),
@@ -97,6 +95,9 @@ def _event(e: dict, with_text: bool = False) -> dict:
         "holiday": e["is_holiday"],
         "calendar": ["jalali", "gregorian", "hijri"][e["base"]],
     }
+    if not dates:
+        for k in ("gregorian", "hijri", "weekday"):
+            del out[k]
     if with_text and (t := _txt(e.get("body"), 900)):
         out["text"] = t
     return out
@@ -123,24 +124,22 @@ def _month_events(data: dict, year: int, month: int) -> list[dict]:
 async def ti_today() -> dict:
     """Get today's date in the Jalali, Gregorian and Hijri calendars with the Tehran time, weekday, zodiac sign and today's events.
 
-    Use this first when the user says "today", "now" or asks what the date or time is in Iran. For another date use
-    ti_events; to convert a date use ti_convert_date.
+    Use first for "today", "now" or the date/time in Iran.
     """
     c = await _convert(None, "jalali")
     y, m, d = _jalali(c)
-    events = [_event(e) for e in _month_events(await _month(y, m), y, m) if e["jalali_day"] == d]
+    events = [_event(e, dates=False) for e in _month_events(await _month(y, m), y, m) if e["jalali_day"] == d]
     return {**c, "is_friday": c["weekday"] == "جمعه", "events": events, "is_holiday": any(e["holiday"] for e in events)}
 
 
 @tool("Convert date")
 async def ti_convert_date(
-    date: Annotated[str, Field(description="Date as YYYY-MM-DD, for example 1405-08-10 or 2026-11-01.")],
+    date: Annotated[str, Field(description="YYYY-MM-DD, e.g. 1405-08-10 or 2026-11-01.")],
     calendar: CAL = "jalali",
 ) -> dict:
     """Convert a date between the Jalali (Solar Hijri), Gregorian and Hijri (lunar) calendars, using time.ir's own converter.
 
-    Returns the same day in all three calendars with the weekday and month names. Jalali dates run from 1 to 9999;
-    the Hijri date is Iran's official one (it can differ by a day from Saudi Arabia's).
+    Hijri is Iran's official date (may differ by a day from Saudi Arabia's).
     """
     c = await _convert(date, calendar)
     return {"input": {"date": date, "calendar": calendar}, **c}
@@ -148,15 +147,12 @@ async def ti_convert_date(
 
 @tool("Month calendar")
 async def ti_month(
-    year: Annotated[int | None, Field(description="Jalali year, for example 1405. Omit for the current one.")] = None,
-    month: Annotated[
-        int | None, Field(description="Jalali month 1 (Farvardin) to 12 (Esfand). Omit for the current one.")
-    ] = None,
+    year: Annotated[int | None, Field(description="Jalali year, e.g. 1405. Omit for current.")] = None,
+    month: Annotated[int | None, Field(description="Jalali month 1-12. Omit for current.")] = None,
 ) -> dict:
     """Show one Jalali month: its Gregorian and Hijri month spans, weekday of day 1, holidays and every event of the month.
 
-    Use for "what is on the calendar in Aban 1405" or "holidays this month". For one day's occasions with their
-    descriptions use ti_events; for the whole year's holidays use ti_holidays.
+    Use for "holidays this month". For one day with descriptions use ti_events.
     """
     if year is None or month is None:
         y, m, _ = _jalali(await _convert(None, "jalali"))
@@ -169,7 +165,7 @@ async def ti_month(
         ms = names[base]
         return " - ".join(x["month_title"] for x in ms) + f" {ms[0]['year']}"
 
-    events = [_event(e) for e in _month_events(data, year, month)]
+    events = [_event(e, dates=False) for e in _month_events(data, year, month)]
     return {
         "year": year,
         "month": month,
@@ -188,13 +184,14 @@ async def ti_month(
 async def ti_events(date: DATE = None, calendar: CAL = "jalali") -> dict:
     """List the occasions (Persian: monasebat) and official holidays of one day, with a short description when time.ir has one.
 
-    Use for "what is special on 13 Aban", "is 2026-12-25 a holiday in Iran". Events come from the Jalali, Gregorian and
-    Hijri calendars together; each has `calendar` (where the occasion belongs) and `holiday`. Friday is the weekend
-    and is not marked as a holiday on its own.
+    Use for "is 2026-12-25 a holiday in Iran". Each event has `calendar` (where the occasion belongs) and `holiday`.
+    Friday alone is not a holiday.
     """
     c = await _convert(date, calendar)
     y, m, d = _jalali(c)
-    events = [_event(e, with_text=True) for e in _month_events(await _month(y, m), y, m) if e["jalali_day"] == d]
+    events = [
+        _event(e, with_text=True, dates=False) for e in _month_events(await _month(y, m), y, m) if e["jalali_day"] == d
+    ]
     return {
         "jalali": c["jalali"],
         "gregorian": c["gregorian"],
@@ -231,12 +228,11 @@ async def _holidays(year: int) -> list[dict]:
 
 @tool("Holidays of a year")
 async def ti_holidays(
-    year: Annotated[int | None, Field(description="Jalali year, for example 1405. Omit for the current year.")] = None,
+    year: Annotated[int | None, Field(description="Jalali year, e.g. 1405. Omit for current.")] = None,
 ) -> dict:
     """List all official holidays (تعطیلات رسمی) of a Jalali year with Gregorian and Hijri dates and weekdays.
 
-    Use for "holidays in 1405" or "how many days off". A Friday is listed only when it is also an occasion holiday. Use
-    ti_upcoming_holidays for "the next holiday".
+    Fridays are listed only when also an occasion holiday. For "the next holiday" use ti_upcoming_holidays.
     """
     if year is None:
         year = _jalali(await _convert(None, "jalali"))[0]
@@ -246,13 +242,13 @@ async def ti_holidays(
 
 @tool("Upcoming holidays")
 async def ti_upcoming_holidays(
-    count: Annotated[int, Field(ge=1, le=20, description="How many holidays to return.")] = 5,
+    count: Annotated[int, Field(ge=1, le=20, description="Holidays to return.")] = 5,
     from_date: DATE = None,
     calendar: CAL = "jalali",
 ) -> dict:
     """List the next official holidays in Iran starting today (or from_date), with days until each.
 
-    Use for "when is the next holiday" or "long weekends coming up". Fridays alone are not listed.
+    Use for "when is the next holiday". Fridays alone are not listed.
     """
     c = await _convert(from_date, calendar)
     start = c["jalali"]
@@ -313,16 +309,13 @@ def _find_province(provinces: list[dict], q: str) -> dict:
 async def ti_cities(
     province: Annotated[
         str | None,
-        Field(
-            description="Province name or id (from this tool without arguments), for example 'فارس'. Omit to list the 31 provinces."
-        ),
+        Field(description="Province name or id, e.g. 'فارس'. Omit to list the 31 provinces."),
     ] = None,
-    query: Annotated[str | None, Field(description="Only cities whose name contains this text.")] = None,
+    query: Annotated[str | None, Field(description="Filter cities by name.")] = None,
 ) -> dict:
     """List Iran's provinces, or the cities of one province, with the ids ti_prayer_times takes.
 
-    Without arguments it returns the 31 provinces with their capital city (id included). Give `province` to list its
-    cities (with latitude, longitude), optionally filtered by `query`.
+    No arguments: 31 provinces with capital city ids. With `province`: its cities with lat/lng.
     """
     provinces = await _provinces()
     if province is None:
@@ -378,18 +371,16 @@ def _hm(s: str) -> str:
 
 @tool("Prayer times")
 async def ti_prayer_times(
-    city: Annotated[str, Field(description="City name (Persian), for example 'شیراز', or a city id from ti_cities.")],
+    city: Annotated[str, Field(description="City name (Persian), e.g. 'شیراز', or city id.")],
     province: Annotated[
-        str | None, Field(description="Province name or id; only needed when `city` is not a provincial capital.")
+        str | None, Field(description="Province name or id; needed unless `city` is a provincial capital.")
     ] = None,
     date: DATE = None,
     calendar: CAL = "jalali",
 ) -> dict:
     """Get the Islamic prayer times (اوقات شرعی) for an Iranian city and day: fajr, sunrise, noon, sunset, maghrib and Islamic midnight.
 
-    Times are Iran local time (Asia/Tehran, 24 h). Use for "azan time in Mashhad today". Time.ir's backend answers
-    for today only, so another `date` returns an error. For a city that is not a provincial capital pass `province`;
-    ti_cities lists the cities and ids.
+    Iran local time, 24 h. Today only: another `date` returns an error. Non-capital cities need `province`.
     """
     cid = await _city_id(city, province)
     c = await _convert(date, calendar)
@@ -397,8 +388,6 @@ async def ti_prayer_times(
     e = await _ephemeris(cid, y, m, d)
     return {
         "city": e["city_title"],
-        "city_id": e["city_id"],
-        "province_id": e["province_id"],
         "jalali": c["jalali"],
         "gregorian": c["gregorian"],
         "weekday": e["day_title"],
@@ -444,15 +433,16 @@ KAABA = (21.4225, 39.8262)
 
 @tool("Qibla direction")
 async def ti_qibla(
-    city: Annotated[str, Field(description="City name (Persian), for example 'شیراز', or a city id from ti_cities.")],
+    city: Annotated[
+        str, Field(description="City name (Persian), e.g. 'شیراز', or city id (then `province` is needed).")
+    ],
     province: Annotated[
-        str | None, Field(description="Province name or id; needed when `city` is not a provincial capital.")
+        str | None, Field(description="Province name or id; needed unless `city` is a provincial capital.")
     ] = None,
 ) -> dict:
     """Get the qibla direction (bearing to the Kaaba in Mecca, degrees clockwise from true north) and distance for an Iranian city.
 
-    Computed here by great-circle math from the city's coordinates on time.ir; Time.ir itself shows no qibla. Use for
-    "which way is qibla in Tabriz". Bearing is from true north, not magnetic north.
+    Computed from the city's coordinates (great circle), not by Time.ir. Bearing is from true north.
     """
     provinces = await _provinces()
     if province:
@@ -497,14 +487,12 @@ async def ti_qibla(
 async def ti_on_this_day(
     kind: Annotated[
         Literal["birth", "death", "event"] | None,
-        Field(description="Keep only births (birth), deaths (death) or other historical events (event)."),
+        Field(description="Keep only this kind."),
     ] = None,
 ) -> dict:
     """List today's historical events, birthdays and deaths of notable people, as Time.ir's "today" page shows them.
 
-    Use for "what happened on this day in history" or "who was born today". Only today is available (the page takes
-    no date). Each item has the occasion `date` as Time.ir prints it (a Gregorian date with year for history, a Jalali
-    day for national occasions). For an occasion search over a whole year use ti_search_events.
+    Today only. Each item's `date` is as Time.ir prints it (Gregorian with year for history, Jalali day for national occasions).
     """
     page = await get_text("/today")
     items = []
@@ -521,23 +509,18 @@ async def ti_on_this_day(
 
 @tool("Search occasions")
 async def ti_search_events(
-    query: Annotated[
-        str, Field(description="Text to look for in occasion names and descriptions, for example 'معلم'.")
-    ],
-    year: Annotated[int | None, Field(description="Jalali year to search. Omit for the current one.")] = None,
-    holiday_only: Annotated[bool, Field(description="Keep only official holidays.")] = False,
+    query: Annotated[str, Field(description="Text in occasion names or descriptions, e.g. 'معلم'.")],
+    year: Annotated[int | None, Field(description="Jalali year. Omit for current.")] = None,
+    holiday_only: Annotated[bool, Field(description="Only official holidays.")] = False,
     calendar: Annotated[
         Calendar | None,
-        Field(
-            description="Keep only occasions of this calendar (jalali: national, gregorian: world days, hijri: religious)."
-        ),
+        Field(description="Only this calendar's occasions (jalali national, gregorian world days, hijri religious)."),
     ] = None,
-    limit: Annotated[int, Field(ge=1, le=100, description="Most results to return.")] = 30,
+    limit: Annotated[int, Field(ge=1, le=100, description="Max results.")] = 30,
 ) -> dict:
     """Search all occasions (monasebat) of a Jalali year by keyword and return each match with its dates.
 
-    Use for "when is Teacher's Day", "all martyrdom dates in 1405" or "which world days are in Azar". Searches titles
-    first, then descriptions. Results are in date order. For one day use ti_events.
+    Use for "when is Teacher's Day". Title matches first, then description matches, each in date order.
     """
     if year is None:
         year = _jalali(await _convert(None, "jalali"))[0]
@@ -568,14 +551,13 @@ async def _is_leap(y: int) -> bool:
 
 @tool("Date difference")
 async def ti_date_difference(
-    from_date: Annotated[str, Field(description="Start date YYYY-MM-DD, for example a birth date 1380-05-17.")],
+    from_date: Annotated[str, Field(description="Start date YYYY-MM-DD, e.g. birth date 1380-05-17.")],
     to_date: DATE = None,
     calendar: CAL = "jalali",
 ) -> dict:
     """Count the days between two dates and give the span as Jalali years, months and days (age calculator).
 
-    Use for "how old is someone born on 1380-05-17" (leave to_date empty for today) or "days until Nowruz". Both
-    dates use the same `calendar`. If to_date is before from_date the result says `direction: before`.
+    Omit to_date for today. Both dates use `calendar`. If to_date is earlier, `direction` is "before".
     """
     a, b = await _convert(from_date, calendar), await _convert(to_date, calendar)
     ga, gb = date.fromisoformat(a["gregorian"]), date.fromisoformat(b["gregorian"])
@@ -616,14 +598,13 @@ def _off_runs(start: date, days: int, off: set[date], min_days: int) -> list[tup
 
 @tool("Long weekends")
 async def ti_long_weekends(
-    year: Annotated[int | None, Field(description="Jalali year. Omit for the current one.")] = None,
-    min_days: Annotated[int, Field(ge=2, le=14, description="Shortest run of days off to list.")] = 3,
-    thursday_off: Annotated[bool, Field(description="Also count Thursdays as days off (many offices close).")] = False,
+    year: Annotated[int | None, Field(description="Jalali year. Omit for current.")] = None,
+    min_days: Annotated[int, Field(ge=2, le=14, description="Shortest run to list.")] = 3,
+    thursday_off: Annotated[bool, Field(description="Count Thursdays as days off.")] = False,
 ) -> dict:
     """Find runs of consecutive days off in a Jalali year: official holidays joined with Fridays (optionally Thursdays).
 
-    Use for "long weekends in 1405" or "when can I take a 4-day trip". Bridge days are not counted and a run cut by the
-    year boundary is cut there. The week starts on Saturday. For the plain holiday list use ti_holidays.
+    Use for "long weekends in 1405". Bridge days are not counted; runs are cut at the year boundary.
     """
     if year is None:
         year = _jalali(await _convert(None, "jalali"))[0]
