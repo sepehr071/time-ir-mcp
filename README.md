@@ -69,14 +69,6 @@ Example prompts: "What is today's Jalali date?", "Is 25 December a holiday in Ir
 "Convert 1405-01-01 to Gregorian and Hijri.", "Azan times in Mashhad today."
 <span dir="rtl">«تاریخ امروز به شمسی چیست؟»، «اذان ظهر شیراز چه ساعتی است؟»، «تعطیلات رسمی بهمن ۱۴۰۵ کدام‌اند؟»</span>
 
-## How it works
-
-`time-ir-mcp` runs locally and calls the same "server actions" the time.ir pages call (www.time.ir is a Next.js app;
-the site's server reads api.time.ir with its own key, which this server never sees). Requests go out through a
-Chrome-impersonating client, spaced at least one second apart, cached for 10 minutes (the current time is never
-cached), and only to www.time.ir. Action ids change when the site is redeployed; when the site rejects one, the server
-looks the new id up by function name in the site's scripts and retries once.
-
 ## Good to know
 
 - **Iran's official calendar only.** Holidays are Iran's; the Hijri date is Iran's (it can differ by a day from Saudi Arabia's). No world clock.
